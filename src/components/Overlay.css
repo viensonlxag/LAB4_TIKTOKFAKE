@@ -1,0 +1,45 @@
+/* File: src/components/Overlay.css */
+.overlay-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; /* Cao hơn các element khác */
+  }
+  
+  .overlay-content {
+    background: #fff;
+    color: #000;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-width: 80%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  }
+  
+  .overlay-content h2 {
+    margin-top: 0;
+  }
+  
+  .overlay-content p {
+    margin: 10px 0;
+  }
+  
+  .close-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .close-btn:hover {
+    background: #0056b3;
+  }
+  

@@ -4,11 +4,11 @@ import VideoCard from './components/VideoCard';
 import BottomNavbar from './components/BottomNavbar';
 import TopNavbar from './components/TopNavbar';
 
-// This array holds information about different videos
+// Sample video array with profile pictures
 const videoUrls = [
   {
     url: require('./videos/video1.mp4'),
-    profilePic: 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-avt-0068-giso/9d429ac49d6d18de6ebd2a3fb1f39269~c5_100x100.jpeg?x-expires=1688479200&x-signature=pjH5pwSS8Sg1dJqbB1GdCLXH6ew%3D',
+    profilePic: 'https://plus.unsplash.com/premium_photo-1688572454849-4348982edf7d?q=80&w=1888&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     username: 'csjackie',
     description: 'Lol nvm #compsci #chatgpt #ai #openai #techtok',
     song: 'Original sound - Famed Flames',
@@ -19,7 +19,7 @@ const videoUrls = [
   },
   {
     url: require('./videos/video2.mp4'),
-    profilePic: 'https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/eace3ee69abac57c39178451800db9d5~c5_100x100.jpeg?x-expires=1688479200&x-signature=wAkVmwL7lej15%2B16ypSWQOqTP8s%3D',
+    profilePic: 'https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     username: 'dailydotdev',
     description: 'Every developer brain @francesco.ciulla #developerjokes #programming #programminghumor #programmingmemes',
     song: 'tarawarolin wants you to know this isnt my sound - Chaplain J Rob',
@@ -30,7 +30,7 @@ const videoUrls = [
   },
   {
     url: require('./videos/video3.mp4'),
-    profilePic: 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/4e6698b235eadcd5d989a665704daf68~c5_100x100.jpeg?x-expires=1688479200&x-signature=wkwHDKfNuIDqIVHNm29%2FRf40R3w%3D',
+    profilePic: 'https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     username: 'wojciechtrefon',
     description: '#programming #softwareengineer #vscode #programmerhumor #programmingmemes',
     song: 'help so many people are using my sound - Ezra',
@@ -41,10 +41,10 @@ const videoUrls = [
   },
   {
     url: require('./videos/video4.mp4'),
-    profilePic: 'https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/4bda52cf3ad31c728153859262c329db~c5_100x100.jpeg?x-expires=1688486400&x-signature=ssUbbCpZFJj6uj33D%2BgtcqxMvgQ%3D',
+    profilePic: 'https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     username: 'faruktutkus',
     description: 'Wait for the end | Im RTX 4090 TI | #softwareengineer #softwareengineer #coding #codinglife #codingmemes ',
-    song: 'orijinal ses - Computer Science',
+    song: 'original sound - Computer Science',
     likes: 9689,
     comments: 230,
     saves: 1037,
@@ -53,28 +53,41 @@ const videoUrls = [
 ];
 
 function App() {
-  const [videos, setVideos] = useState([]);
+  const [videos, setVideos] = useState(videoUrls); // All videos
+  const [displayVideos, setDisplayVideos] = useState(videoUrls); // Filtered videos
   const videoRefs = useRef([]);
+  const containerRef = useRef(null); 
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Overlay states
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayVideo, setOverlayVideo] = useState(null);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    setVideos(videoUrls);
+    setVideos(videoUrls); 
+    setDisplayVideos(videoUrls);
   }, []);
 
+  // Observe videos for play/pause
   useEffect(() => {
     const observerOptions = {
       root: null,
       rootMargin: '0px',
-      threshold: 0.8, // Adjust this value to change the scroll trigger point
+      threshold: 0.8,
     };
 
-    // This function handles the intersection of videos
     const handleIntersection = (entries) => {
       entries.forEach((entry) => {
+        const videoElement = entry.target;
         if (entry.isIntersecting) {
-          const videoElement = entry.target;
           videoElement.play();
         } else {
-          const videoElement = entry.target;
           videoElement.pause();
         }
       });
@@ -82,28 +95,137 @@ function App() {
 
     const observer = new IntersectionObserver(handleIntersection, observerOptions);
 
-    // We observe each video reference to trigger play/pause
     videoRefs.current.forEach((videoRef) => {
-      observer.observe(videoRef);
+      if (videoRef) observer.observe(videoRef);
     });
 
-    // We disconnect the observer when the component is unmounted
     return () => {
       observer.disconnect();
     };
-  }, [videos]);
+  }, [displayVideos]);
 
-  // This function handles the reference of each video
   const handleVideoRef = (index) => (ref) => {
     videoRefs.current[index] = ref;
   };
 
+  const scrollToVideo = (index) => {
+    if (videoRefs.current[index]) {
+      videoRefs.current[index].scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Drag event handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartY(e.clientY);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const endY = e.clientY;
+    const deltaY = endY - startY;
+
+    if (deltaY < -50) {
+      // Drag up -> next video
+      if (currentIndex < displayVideos.length - 1) {
+        const newIndex = currentIndex + 1;
+        setCurrentIndex(newIndex);
+        scrollToVideo(newIndex);
+      }
+    } else if (deltaY > 50) {
+      // Drag down -> previous video
+      if (currentIndex > 0) {
+        const newIndex = currentIndex - 1;
+        setCurrentIndex(newIndex);
+        scrollToVideo(newIndex);
+      }
+    }
+  };
+
+  // Update currentIndex based on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      let newIndex = currentIndex;
+      videoRefs.current.forEach((ref, index) => {
+        if (ref) {
+          const offsetTop = ref.offsetTop;
+          if (scrollPosition >= offsetTop - window.innerHeight / 2) {
+            newIndex = index;
+          }
+        }
+      });
+      if (newIndex !== currentIndex) {
+        setCurrentIndex(newIndex);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentIndex, displayVideos]);
+
+  // Show overlay on ArrowRight
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        showVideoInfoOverlay(displayVideos[currentIndex]);
+      } else if (e.key === 'Escape') {
+        setShowOverlay(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentIndex, displayVideos]);
+
+  const showVideoInfoOverlay = (video) => {
+    setOverlayVideo(video);
+    setShowOverlay(true);
+  };
+
+  const closeOverlay = () => {
+    setShowOverlay(false);
+  };
+
+  // Search function
+  const searchVideos = (term) => {
+    const trimmed = term.trim();
+    if (!trimmed) {
+      setDisplayVideos(videos); // no search term => show all
+      return;
+    }
+    const filtered = videos.filter(video =>
+      video.description.toLowerCase().includes(trimmed.toLowerCase())
+    );
+    setDisplayVideos(filtered);
+  };
+
   return (
-    <div className="app">
+    <div
+      className="app"
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      style={{ overflow: 'hidden' }}
+    >
       <div className="container">
-        <TopNavbar className="top-navbar" />
-        {/* Here we map over the videos array and create VideoCard components */}
-        {videos.map((video, index) => (
+        <TopNavbar
+          className="top-navbar"
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onSearch={searchVideos}
+        />
+
+        {displayVideos.map((video, index) => (
           <VideoCard
             key={index}
             username={video.username}
@@ -119,11 +241,31 @@ function App() {
             autoplay={index === 0}
           />
         ))}
+
         <BottomNavbar className="bottom-navbar" />
       </div>
+
+      {/* Overlay Component */}
+      {showOverlay && overlayVideo && (
+        <div className="overlay-wrapper" onClick={closeOverlay}>
+          <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
+            <h1 className="overlay-title">User Information</h1>
+            <div className="overlay-info">
+              <img src={overlayVideo.profilePic} alt={overlayVideo.username} className="profile-pic" />
+              <p><strong>Username:</strong> {overlayVideo.username}</p>
+              <p><strong>Description:</strong> {overlayVideo.description}</p>
+              <p><strong>Song:</strong> {overlayVideo.song}</p>
+              <p><strong>Likes:</strong> {overlayVideo.likes}</p>
+              <p><strong>Comments:</strong> {overlayVideo.comments}</p>
+              <p><strong>Saves:</strong> {overlayVideo.saves}</p>
+              <p><strong>Shares:</strong> {overlayVideo.shares}</p>
+            </div>
+            <button className="close-btn" onClick={closeOverlay}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
-  
 }
 
 export default App;
